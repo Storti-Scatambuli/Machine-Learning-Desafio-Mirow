@@ -1,40 +1,54 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-from sklearn.cluster import AgglomerativeClustering
+from sklearn.cluster import AffinityPropagation
 
 data_countrys = pd.read_csv(r'Datas\Base de Dados - PIBs.csv')
-data_countrys.drop(columns=['Unnamed: 1', 'Classificação'], inplace=True)
+data_countrys.drop(columns=['Classificação', 'Ano Consumido (kWh)'], inplace=True)
 data_countrys = data_countrys.replace(r'^\s*$', np.nan, regex=True)
-countrys_to_mean = ['% Share of RE Generation (excluded Hydro)', '% Share of RE Generation (including Hydro-2021)', 'Share of RE Consumption (2018)', 'Crescimento do PIB', 'Custo (kWh) por USD', 'PIB (Trilhões de Dólares)']
-# countrys_no_replace = ['Crescimento do PIB', 'Custo (kWh) por USD']
-countrys_to_zero = [' % Revised', '%Revised including hydro', 'Later Target', '100% renewable power target/Fossil fuel ban', 'Countries with 100% target', 'Última Meta ER Revisada ', 'Ano Previsto da Meta ER']
+colunas_replace = ['PIB (Trilhões de Dólares)',	'Crescimento do PIB', 'Última Meta ER Revisada ', 'Custo (kWh) por USD', 'Geração de ER %']
 
-for i in countrys_to_mean:
+for i in colunas_replace:
     data_countrys[i] = data_countrys[i].str.replace(',', '.').apply(pd.to_numeric)
-    
-    col_means = data_countrys[i].mean()
-    data_countrys[i] = data_countrys[i].fillna(col_means)
 
-for i in countrys_to_zero:
-    data_countrys[i] = data_countrys[i].fillna(0)
+data_countrys['Última Meta ER Revisada '] = data_countrys['Última Meta ER Revisada ']/(data_countrys['Ano Previsto da Meta ER']-2022)
 
+paises_duvida = data_countrys[(data_countrys['Países'] == 'México') | (data_countrys['Países'] == 'França') | (data_countrys['Países'] == 'Alemanha')]
 
-data = data_countrys[['PIB (Trilhões de Dólares)', 'Crescimento do PIB', 'Consumo (kWh)', 'Ano Consumido (kWh)', 'Custo (kWh) por USD', '% Share of RE Generation (excluded Hydro)', '% Share of RE Generation (including Hydro-2021)', 'Share of RE Consumption (2018)']].values
-countries = data_countrys['Países'].tolist()
-data_names = ['PIB (Trilhões de Dólares)', 'Crescimento do PIB', 'Consumo (kWh)', 'Ano Consumido (kWh)', 'Custo (kWh) por USD', '% Share of RE Generation (excluded Hydro)', '% Share of RE Generation (including Hydro-2021)', 'Share of RE Consumption (2018)']
+data_names_ = ['PIB (Trilhões de Dólares)', 'Crescimento do PIB',
+       'Última Meta ER Revisada ', 'Ano Previsto da Meta ER',
+       'Total de Emissão Fóssil de CO2 (1990)',
+       'Total de Emissão Fóssil de CO2 (2000)',
+       'Total de Emissão Fóssil de CO2 (2005)',
+       'Total de Emissão Fóssil de CO2 (2015)',
+       'Total de Emissão Fóssil de CO2 (2019)',
+       'Total de Emissão Fóssil de CO2 (2020)',
+       'Total de Emissão Fóssil de CO2 (2021)',
+       'Total de Emissão Fóssil de CO2 (%)', 'Consumo (kWh)',
+       'Custo (kWh) por USD',
+       'Geração de ER %']
+
+data_names = ['Geração de ER %','PIB (Trilhões de Dólares)',
+       'Última Meta ER Revisada ', 'Custo (kWh) por USD', 'Consumo (kWh)', 'Total de Emissão Fóssil de CO2 (%)']
+data = paises_duvida[data_names].values
+
+countries = paises_duvida['Países'].tolist()
 # Hierarchical Clustering
 
-id1 = 6
-id2 = 4
-clustering = AgglomerativeClustering(n_clusters=5, linkage='complete')
+clustering = AffinityPropagation(random_state=0)
 labels = clustering.fit_predict(data)
 
-plt.figure(figsize=(8, 6))
+id1_name = 'PIB (Trilhões de Dólares)'
+id2_name = 'Última Meta ER Revisada '
+
+id1 = data_names.index(id1_name)
+id2 = data_names.index(id2_name)
+
+plt.figure(figsize=(10, 8))
 plt.scatter(data[:, id1], data[:, id2], c=labels, cmap='viridis')
 plt.xlabel(data_names[id1])
 plt.ylabel(data_names[id2])
-plt.title('Hierarchical Clustering')
+plt.title('Comparação')
 
 # Adicionar rótulos aos países
 for i, country in enumerate(countries):
