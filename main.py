@@ -30,28 +30,34 @@ data_names_ = ['PIB (Trilhões de Dólares)', 'Crescimento do PIB',
 
 data_names = ['Geração de ER %','PIB (Trilhões de Dólares)',
        'Última Meta ER Revisada ', 'Custo (kWh) por USD', 'Consumo (kWh)', 'Total de Emissão Fóssil de CO2 (%)']
-data = paises_duvida[data_names].values
+data = data_countrys[data_names].values
 
-countries = paises_duvida['Países'].tolist()
+countries = data_countrys['Países'].tolist()
 # Hierarchical Clustering
 
 clustering = AffinityPropagation(random_state=0)
 labels = clustering.fit_predict(data)
 
-id1_name = 'PIB (Trilhões de Dólares)'
-id2_name = 'Última Meta ER Revisada '
+id1_name = 'Consumo (kWh)'
+id2_name = 'Geração de ER %'
+id3_name = 'Custo (kWh) por USD'
 
 id1 = data_names.index(id1_name)
 id2 = data_names.index(id2_name)
+id3 = data_names.index(id3_name)
 
-plt.figure(figsize=(10, 8))
-plt.scatter(data[:, id1], data[:, id2], c=labels, cmap='viridis')
-plt.xlabel(data_names[id1])
-plt.ylabel(data_names[id2])
+fig = plt.figure(figsize=(10, 8))
+ax = plt.axes(projection='3d')
+
+ax.scatter3D(data[:, id1], data[:, id2],data[:, id3], c=labels, cmap='viridis')
+ax.set_xlabel(data_names[id1])
+ax.set_ylabel(data_names[id2])
+ax.set_zlabel(data_names[id3])
 plt.title('Comparação')
 
-# Adicionar rótulos aos países
 for i, country in enumerate(countries):
-    plt.annotate(country, (data[i, id1], data[i, id2]), textcoords="offset points", xytext=(0,10), ha='center')
+    ax.text(data[i, id1], data[i, id2], data[i, id3], country, fontsize=5)
+
+# Adicionar rótulos aos países
 
 plt.show()
