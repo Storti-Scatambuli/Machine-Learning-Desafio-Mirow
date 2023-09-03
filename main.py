@@ -53,10 +53,10 @@ ax.scatter3D(data[:, id1], data[:, id2],data[:, id3], c=labels, cmap='viridis')
 ax.set_xlabel(data_names[id1])
 ax.set_ylabel(data_names[id2])
 ax.set_zlabel(data_names[id3])
-plt.title('Comparação')
+plt.title('Affinity Propagation')
 
 for i, country in enumerate(countries):
-    ax.text(data[i, id1], data[i, id2], data[i, id3], country, fontsize=5)
+    ax.text(data[i, id1], data[i, id2], data[i, id3], country, fontsize=6)
 
 # Adicionar rótulos aos países
 
